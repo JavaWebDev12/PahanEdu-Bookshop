@@ -1,0 +1,25 @@
+# Eclipse & Java Web Project
+
+# Eclipse specific
+.classpath
+.project
+.settings/
+
+# Java build directories
+bin/
+target/
+build/
+
+# Temporary / generated files
+*.class
+*.log
+*.tmp
+*.bak
+*.swp
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Backup files
+*~
