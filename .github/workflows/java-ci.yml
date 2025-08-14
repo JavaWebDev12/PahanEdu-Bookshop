@@ -1,37 +1,46 @@
-name: Java CI (No Maven, with Servlet API)
+name: Java CI (No Maven, javax servlet)
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  push: { branches: [ main ] }
+  pull_request: { branches: [ main ] }
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: '11'   # change to 8/17 if your project uses that
 
-      - name: Download Servlet API
+      - name: Download Servlet API (javax 4.0.1)
         run: |
           mkdir -p lib
-          curl -o lib/jakarta.servlet-api.jar https://repo1.maven.org/maven2/jakarta/servlet/jakarta.servlet-api/5.0.0/jakarta.servlet-api-5.0.0.jar
+          curl -L -o lib/servlet-api.jar \
+            https://repo1.maven.org/maven2/javax/servlet/javax.servlet-api/4.0.1/javax.servlet-api-4.0.1.jar
 
-      - name: Compile Java files
+      - name: Compile Java sources
         run: |
           mkdir -p build
           find src/main/java -name "*.java" > sources.txt
-          javac -cp "lib/jakarta.servlet-api.jar" -d build @sources.txt
+          javac -cp "lib/servlet-api.jar" -d build @sources.txt
 
-      - name: Upload compiled classes
+      - name: Package WAR (optional but recommended)
+        run: |
+          mkdir -p staging/WEB-INF/classes
+          # copy compiled classes
+          cp -r build/* staging/WEB-INF/classes/
+          # copy your web assets (adjust if you use WebContent/)
+          cp -r src/main/webapp/* staging/
+          # create the WAR
+          cd staging && jar -cvf ../app.war .
+          cd ..
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: compiled-classes
-          path: build
+          name: app-war
+          path: app.war
